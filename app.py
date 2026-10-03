@@ -6,7 +6,7 @@ import streamlit as st
 from orchestrator import StartupAnalyzer
 
 st.set_page_config(
-    page_title="Startup Idea Analyzer",
+    page_title="Startup Idea Analyzer — Agentic AI Startup Validation Copilot",
     page_icon="📈",
     layout="wide",
 )
@@ -39,7 +39,7 @@ html, body, .stApp, [data-testid="stApp"] {
   color: var(--ink);
   font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
-[data-testid="stHeader"] { background: transparent !important; }
+[data-testid="stHeader"] { background: transparent !important; pointer-events: none; }
 [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu, footer {
   display: none !important;
 }
@@ -61,24 +61,40 @@ h1, h2, h3, h4 {
 }
 
 /* Top bar */
-.topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0 18px; border-bottom: 1px solid var(--line);
-}
-.brand {
-  display: flex; align-items: center; gap: 10px;
-  font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700;
-  font-size: 1.1rem; color: var(--ink);
-}
+.brand { display: flex; align-items: center; gap: 14px; }
 .brand-mark {
-  width: 22px; height: 22px; border-radius: 6px; background: var(--pine);
-  position: relative; display: inline-block;
+  width: 34px; height: 34px; border-radius: 9px; background: var(--pine);
+  position: relative; display: inline-block; flex: none;
 }
 .brand-mark::after {
-  content: ""; position: absolute; right: 4px; bottom: 4px;
-  width: 7px; height: 7px; border-radius: 50%; background: var(--saffron);
+  content: ""; position: absolute; right: 6px; bottom: 6px;
+  width: 9px; height: 9px; border-radius: 50%; background: var(--saffron);
 }
-.topbar-note { color: var(--muted); font-size: 0.9rem; }
+.brand-text { display: flex; flex-direction: column; min-width: 0; }
+.brand-name {
+  font-family: 'Bricolage Grotesque', 'IBM Plex Sans', sans-serif; font-weight: 700;
+  font-size: clamp(1.3rem, 3.6vw, 1.6rem); line-height: 1.1; letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.brand-sub {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 500;
+  font-size: 0.9rem; line-height: 1.3; color: var(--muted); margin-top: 3px;
+}
+.topbar-note { color: var(--muted); font-size: 0.9rem; text-align: right; }
+@media (min-width: 769px) { .topbar-note { position: relative; top: -9px; } }
+@media (max-width: 768px) { .topbar-note { text-align: left; } }
+.topbar-rule { border-bottom: 1px solid var(--line); margin: 14px 0 0; }
+
+/* Theme toggle */
+[data-testid="stToggle"], [data-testid="stCheckbox"]:has(input[role="switch"]) {
+  display: flex; justify-content: flex-end;
+}
+[data-testid="stElementContainer"]:has(input[role="switch"]) { width: 100%; }
+[data-testid="stCheckbox"]:has(input[role="switch"]) { width: 100%; }
+[data-testid="stCheckbox"] label:has(input[role="switch"]) { margin-left: auto; }
+[data-testid="stCheckbox"] label:has(input[role="switch"]) p { font-weight: 600; font-size: 0.9rem; }
+label:has(input[role="switch"]) > div:first-of-type { background: #B9C1BD !important; }
+label:has(input[role="switch"]:checked) > div:first-of-type { background: var(--pine) !important; }
 
 /* Hero */
 .hero { padding: 44px 0 10px; max-width: 760px; }
@@ -277,6 +293,7 @@ button:focus-visible {
 .stTabs [aria-selected="true"] p { color: var(--pine) !important; }
 .stTabs [data-baseweb="tab-highlight"] { background: var(--pine) !important; height: 3px; }
 .stTabs [data-baseweb="tab-border"] { display: none; }
+.stTabs .react-aria-SelectionIndicator { background: var(--pine) !important; height: 3px; }
 
 /* Expanders */
 [data-testid="stExpander"] {
@@ -333,7 +350,78 @@ ul.plain li { margin: 4px 0; color: var(--ink); line-height: 1.6; }
 </style>
 """
 
-st.markdown(CSS, unsafe_allow_html=True)
+DARK_CSS = """
+<style>
+:root {
+  color-scheme: dark;
+  --paper: #0B0C0C;
+  --surface: #151817;
+  --ink: #F2F4F3;
+  --muted: #A5AFAA;
+  --line: #2B312E;
+  --pine: #2E7A6A;
+  --pine-dark: #256355;
+  --good: #4CBF8B;
+  --mid: #E0A93B;
+  --mid-text: #E8B04A;
+  --low: #E57373;
+}
+[data-baseweb="input"], [data-baseweb="textarea"], [data-baseweb="select"] > div,
+[data-testid="stTextInput"] div:has(> input),
+[data-testid="stTextArea"] div:has(> textarea),
+[data-testid="stSelectbox"] div:has(> input) {
+  background: #1B1F1D !important; border: 1px solid #3A423E !important;
+}
+[data-baseweb="input"]:focus-within,
+[data-baseweb="textarea"]:focus-within,
+[data-baseweb="select"] > div:focus-within,
+[data-testid="stTextInput"] div:has(> input):focus-within,
+[data-testid="stTextArea"] div:has(> textarea):focus-within,
+[data-testid="stSelectbox"] div:has(> input):focus-within {
+  border-color: #6CC4B0 !important; box-shadow: 0 0 0 3px rgba(108, 196, 176, 0.25) !important;
+}
+input::placeholder, textarea::placeholder { color: #7C8883 !important; -webkit-text-fill-color: #7C8883; }
+[data-baseweb="select"] svg { fill: var(--ink) !important; }
+[data-baseweb="popover"] [role="listbox"], [data-baseweb="popover"] li, [data-baseweb="menu"] {
+  background: #1B1F1D !important; color: var(--ink) !important;
+}
+.stButton > button, .stDownloadButton > button { background: #1B1F1D; border-color: #3A423E; color: var(--ink); }
+.stButton > button:hover, .stDownloadButton > button:hover { border-color: #6CC4B0; color: #6CC4B0; }
+.stButton > button p, .stDownloadButton > button p { color: inherit !important; }
+[data-testid="stFormSubmitButton"] > button { background: var(--pine) !important; border-color: var(--pine) !important; color: #fff !important; }
+[data-testid="stFormSubmitButton"] > button:hover { background: var(--pine-dark) !important; border-color: var(--pine-dark) !important; }
+.bar, .cat-bar { background: #2B312E; }
+.gauge { background: conic-gradient(var(--c) calc(var(--pct) * 1%), #2B312E 0); }
+.chip, .pill { background: #262B29; }
+.pill.high { background: #3A2323; } .pill.medium { background: #3A2E14; } .pill.low { background: #173326; }
+.cat-row { border-bottom-color: #232826; }
+.stTabs [aria-selected="true"] p { color: #6CC4B0 !important; }
+.stTabs [data-baseweb="tab-highlight"], .stTabs .react-aria-SelectionIndicator { background: #6CC4B0 !important; }
+[data-testid="stSelectbox"] input, [data-testid="stSelectbox"] button,
+[data-testid="stSelectbox"] [role="group"] {
+  color: var(--ink) !important; -webkit-text-fill-color: var(--ink) !important;
+}
+[data-testid="stSelectbox"] svg { fill: var(--ink) !important; color: var(--ink) !important; }
+[role="listbox"], [role="option"], [data-testid="stSelectboxVirtualDropdown"] {
+  background: #1B1F1D !important; color: var(--ink) !important;
+}
+[role="option"]:hover, [role="option"][data-hovered], [role="option"][data-focused], [role="option"][aria-selected="true"] {
+  background: #262B29 !important;
+}
+.callout.info { border-left-color: #6CC4B0; }
+label:has(input[role="switch"]) > div:first-of-type { background: #3A423E !important; }
+label:has(input[role="switch"]:checked) > div:first-of-type { background: #6CC4B0 !important; }
+[data-testid="stMarkdownContainer"] code { background: #262B29; color: var(--ink); }
+[data-testid="stMarkdownContainer"] a { color: #7FC4FF; }
+[data-testid="stMarkdownContainer"] table, [data-testid="stMarkdownContainer"] th,
+[data-testid="stMarkdownContainer"] td { color: var(--ink) !important; border-color: var(--line) !important; }
+</style>
+"""
+
+st.markdown(
+    CSS + (DARK_CSS if st.session_state.get("dark_mode") else ""),
+    unsafe_allow_html=True,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -432,13 +520,35 @@ def load_example():
 # Header and hero
 # ---------------------------------------------------------------------------
 
+bar_brand, bar_note, bar_toggle = st.columns([5, 2.2, 1.6], vertical_alignment="center")
+with bar_brand:
+    st.markdown(
+        H(
+            """
+            <div class='brand'>
+              <span class='brand-mark'></span>
+              <div class='brand-text'>
+                <span class='brand-name'>Startup Idea Analyzer</span>
+                <span class='brand-sub'>Agentic AI Startup Validation Copilot</span>
+              </div>
+            </div>
+            """
+        ),
+        unsafe_allow_html=True,
+    )
+with bar_note:
+    st.markdown(
+        "<div class='topbar-note'>Validate before you build</div>",
+        unsafe_allow_html=True,
+    )
+with bar_toggle:
+    st.toggle("Dark mode", key="dark_mode")
+
+st.markdown("<div class='topbar-rule'></div>", unsafe_allow_html=True)
+
 st.markdown(
     H(
         """
-        <div class='topbar'>
-          <div class='brand'><span class='brand-mark'></span>Startup Idea Analyzer</div>
-          <div class='topbar-note'>Validate before you build</div>
-        </div>
         <div class='hero'>
           <h1>Know what to test before you build.</h1>
           <p class='lead'>Describe your startup idea. Eleven AI agents review the problem,
