@@ -22,9 +22,14 @@ class ValidationExperiment(BaseModel):
     priority: str
 
 
+class DayPlan(BaseModel):
+    day: int
+    action: str
+
+
 class ValidationPlan(BaseModel):
     experiments: List[ValidationExperiment]
-    seven_day_plan: List[dict]
+    seven_day_plan: List[DayPlan]
 
 
 class RedTeamResult(BaseModel):
