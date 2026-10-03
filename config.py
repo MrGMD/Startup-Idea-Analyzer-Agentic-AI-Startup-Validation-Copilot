@@ -1,7 +1,7 @@
 import os
 
-# Use "openai/gpt-oss-120b" with REASONING_EFFORT = "medium" for demos.
-MODEL_NAME = "openai/gpt-oss-20b"
+# Using the larger model. For lower token usage while testing, use "openai/gpt-oss-20b".
+MODEL_NAME = "openai/gpt-oss-120b"
 GROQ_API_KEY_ENV = "GROQ_API_KEY"
 
 # GPT-OSS 120B supports long context and structured outputs on Groq.
