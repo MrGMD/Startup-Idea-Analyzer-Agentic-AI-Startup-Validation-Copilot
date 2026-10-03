@@ -21,6 +21,9 @@ For every experiment provide:
 
 Also produce a realistic 7-day validation roadmap.
 
+Be brief: at most 4 experiments, one short sentence per field, and one
+short sentence per day in the 7-day plan.
+
 Do not recommend vague actions such as "do market research."
 Prefer interviews, pricing tests, landing-page tests, prototype tests,
 pre-orders, pilot signups, or other measurable experiments.
