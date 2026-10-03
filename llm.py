@@ -39,8 +39,48 @@ def get_client() -> Groq:
     return _client
 
 
+_UNSUPPORTED_KEYS = {"title", "minimum", "maximum", "default"}
+
+
+def _strictify(node, defs):
+    """Make a Pydantic JSON schema acceptable to Groq strict mode.
+
+    - inlines $ref/$defs
+    - sets additionalProperties: false on every object
+    - marks every property as required
+    - removes keywords strict mode does not support
+    """
+    if isinstance(node, list):
+        return [_strictify(item, defs) for item in node]
+
+    if not isinstance(node, dict):
+        return node
+
+    if "$ref" in node:
+        name = node["$ref"].split("/")[-1]
+        return _strictify(defs[name], defs)
+
+    result = {}
+    for key, value in node.items():
+        if key in _UNSUPPORTED_KEYS and not isinstance(value, dict):
+            continue
+        if key == "$defs":
+            continue
+        if key == "properties":
+            result[key] = {k: _strictify(v, defs) for k, v in value.items()}
+        else:
+            result[key] = _strictify(value, defs)
+
+    if result.get("type") == "object" or "properties" in result:
+        result["additionalProperties"] = False
+        result["required"] = list(result.get("properties", {}).keys())
+
+    return result
+
+
 def _schema_for(model: Type[BaseModel]) -> dict:
-    return model.model_json_schema()
+    schema = model.model_json_schema()
+    return _strictify(schema, schema.get("$defs", {}))
 
 
 def structured_completion(
