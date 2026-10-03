@@ -639,7 +639,7 @@ with st.form("startup_form"):
         )
 
     submitted = st.form_submit_button(
-        "Analyze idea",
+        "Analyze",
         type="primary",
         use_container_width=True,
     )
