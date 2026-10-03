@@ -1,13 +1,14 @@
 import os
 
-MODEL_NAME = "openai/gpt-oss-120b"
+# Use "openai/gpt-oss-120b" with REASONING_EFFORT = "medium" for demos.
+MODEL_NAME = "openai/gpt-oss-20b"
 GROQ_API_KEY_ENV = "GROQ_API_KEY"
 
 # GPT-OSS 120B supports long context and structured outputs on Groq.
 # Moderate output limits help keep hackathon usage under control.
-MAX_COMPLETION_TOKENS = 1800
+MAX_COMPLETION_TOKENS = 1500
 TEMPERATURE = 0.2
-REASONING_EFFORT = "medium"
+REASONING_EFFORT = "low"
 
 SCORING_WEIGHTS = {
     "Problem Strength": 0.15,
