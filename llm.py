@@ -100,6 +100,13 @@ def _is_rate_limit(exc: Exception) -> bool:
     return "429" in text or "rate_limit" in text or "rate limit" in text
 
 
+def _is_schema_failure(exc: Exception) -> bool:
+    """Model produced JSON that does not match the schema (a random glitch,
+    most common on the smaller model). Retrying usually fixes it."""
+    text = str(exc).lower()
+    return "json_validate_failed" in text or "does not match the expected schema" in text
+
+
 def _retry_seconds(text: str) -> float:
     """Read 'try again in 7m51.7s' / '2.5s' / '820ms' from a Groq error."""
     ms = re.search(r"try again in\s+(\d+(?:\.\d+)?)ms", text)
@@ -151,7 +158,7 @@ def _create(client: Groq, model: str, messages, max_tokens: int, **kwargs):
         if time.time() - _exhausted.get(candidate, 0) < EXHAUSTED_COOLDOWN:
             continue
 
-        for _ in range(3):
+        for attempt in range(3):
             _wait_for_capacity(candidate, _estimate_tokens(messages, max_tokens))
             try:
                 response = client.chat.completions.create(
@@ -161,6 +168,11 @@ def _create(client: Groq, model: str, messages, max_tokens: int, **kwargs):
                     **kwargs,
                 )
             except Exception as exc:
+                if _is_schema_failure(exc):
+                    last_exc = exc
+                    if attempt >= 1:
+                        break  # give up on this model, try the other one
+                    continue
                 if not _is_rate_limit(exc):
                     raise
                 last_exc = exc
