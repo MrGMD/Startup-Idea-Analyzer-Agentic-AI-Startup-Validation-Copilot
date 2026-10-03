@@ -90,26 +90,39 @@ def structured_completion(
 ) -> BaseModel:
     client = get_client()
 
-    response = client.chat.completions.create(
-        model=MODEL_NAME,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=TEMPERATURE,
-        max_completion_tokens=MAX_COMPLETION_TOKENS,
-        reasoning_effort=REASONING_EFFORT,
-        response_format={
-            "type": "json_schema",
-            "json_schema": {
-                "name": output_model.__name__.lower(),
-                "strict": True,
-                "schema": _schema_for(output_model),
-            },
-        },
-    )
+    max_tokens = MAX_COMPLETION_TOKENS
+    content = None
 
-    content = response.choices[0].message.content
+    # Reasoning tokens count against max_completion_tokens, so a small limit
+    # can leave no room for the JSON answer. Retry with a larger budget.
+    for _ in range(3):
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=TEMPERATURE,
+            max_completion_tokens=max_tokens,
+            reasoning_effort=REASONING_EFFORT,
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "name": output_model.__name__.lower(),
+                    "strict": True,
+                    "schema": _schema_for(output_model),
+                },
+            },
+        )
+
+        choice = response.choices[0]
+        content = choice.message.content
+        if content and choice.finish_reason != "length":
+            break
+
+        content = None
+        max_tokens = min(max_tokens * 2, 16000)
+
     if not content:
         raise RuntimeError("Groq returned an empty response.")
 
@@ -146,8 +159,15 @@ def text_completion(
         # compatible with structured outputs.
         kwargs["tools"] = [{"type": "browser_search"}]
 
-    response = client.chat.completions.create(**kwargs)
-    content = response.choices[0].message.content
+    content = None
+    for _ in range(3):
+        response = client.chat.completions.create(**kwargs)
+        content = response.choices[0].message.content
+        if content:
+            break
+        kwargs["max_completion_tokens"] = min(
+            kwargs["max_completion_tokens"] * 2, 16000
+        )
 
     if not content:
         raise RuntimeError("Groq returned an empty response.")
