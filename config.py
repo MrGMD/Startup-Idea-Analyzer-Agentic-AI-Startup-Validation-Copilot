@@ -6,7 +6,7 @@ GROQ_API_KEY_ENV = "GROQ_API_KEY"
 
 # GPT-OSS 120B supports long context and structured outputs on Groq.
 # Moderate output limits help keep hackathon usage under control.
-MAX_COMPLETION_TOKENS = 1500
+MAX_COMPLETION_TOKENS = 4000
 TEMPERATURE = 0.2
 REASONING_EFFORT = "low"
 
