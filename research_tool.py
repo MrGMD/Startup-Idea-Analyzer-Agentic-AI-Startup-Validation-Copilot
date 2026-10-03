@@ -1,3 +1,4 @@
+from config import RESEARCH_MAX_TOKENS, USE_BROWSER_SEARCH
 from llm import text_completion
 
 
@@ -28,15 +29,27 @@ Use current publicly available information. Prefer credible sources.
 Clearly distinguish facts/evidence from interpretation.
 Include source names or URLs when available.
 Do not invent statistics.
+Keep the whole answer under 400 words, as short bullet points.
 """
 
-    return text_completion(
-        system_prompt=(
+    if USE_BROWSER_SEARCH:
+        system_prompt = (
             "You are the market research specialist for a startup validation "
             "system. Perform evidence-oriented web research. Be concise but "
             "useful. If reliable evidence is unavailable, say so explicitly."
-        ),
+        )
+    else:
+        system_prompt = (
+            "You are the market research specialist for a startup validation "
+            "system. You have NO live web access: write background notes "
+            "from general knowledge and label them clearly as unverified "
+            "model knowledge, not sourced evidence. Do not cite URLs or "
+            "invent statistics. Say explicitly where evidence is unavailable."
+        )
+
+    return text_completion(
+        system_prompt=system_prompt,
         user_prompt=query,
-        max_tokens=2800,
-        use_browser_search=True,
+        max_tokens=RESEARCH_MAX_TOKENS,
+        use_browser_search=USE_BROWSER_SEARCH,
     )
