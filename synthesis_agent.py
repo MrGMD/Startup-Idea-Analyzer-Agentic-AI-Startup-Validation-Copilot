@@ -1,4 +1,5 @@
 from schemas import FinalReport
+from config import FINAL_MAX_COMPLETION_TOKENS, FINAL_MODEL_NAME
 from llm import structured_completion
 from helpers import startup_context
 
@@ -24,6 +25,7 @@ Important:
 - Do not invent sources or statistics.
 
 The report must be practical for an early-stage founder.
+Be brief: every text section max 80 words; the short fields one sentence.
 """
 
         user = f"""
@@ -36,4 +38,10 @@ FULL AGENT CONTEXT
 Produce the final structured validation report.
 """
 
-        return structured_completion(system, user, FinalReport)
+        return structured_completion(
+            system,
+            user,
+            FinalReport,
+            model=FINAL_MODEL_NAME,
+            max_tokens=FINAL_MAX_COMPLETION_TOKENS,
+        )
