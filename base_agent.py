@@ -23,7 +23,8 @@ Rules:
 - Score the current strength of the relevant dimension from 0 to 100.
 - Confidence must be one of: Low, Medium, High.
 - Recommendations must be actionable.
-- Keep the response concise enough for a hackathon application.
+- Be brief: summary max 2 sentences; every list max 3 items; every item one
+  short sentence.
 """
 
         user = f"""
