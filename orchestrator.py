@@ -12,7 +12,14 @@ from synthesis_agent import SynthesisAgent
 
 from schemas import AnalysisResult
 from research_tool import research_startup
-from helpers import compact_result
+from config import RESEARCH_CHARS_FOR_AGENTS, RESEARCH_CHARS_FOR_LATER_STAGES
+from helpers import (
+    brief,
+    brief_red_team,
+    brief_validation,
+    compact_result,
+    trim_text,
+)
 from scoring import calculate_scores
 
 
@@ -29,7 +36,9 @@ class StartupAnalyzer:
         results["idea"] = idea
 
         self._status(status_callback, "Researching market and competitors...", 15)
-        research = research_startup(startup)
+        full_research = research_startup(startup)
+        research = trim_text(full_research, RESEARCH_CHARS_FOR_AGENTS)
+        short_research = trim_text(full_research, RESEARCH_CHARS_FOR_LATER_STAGES)
 
         self._status(status_callback, "Analyzing the customer problem...", 28)
         results["problem"] = ProblemAgent().run(startup, research)
@@ -63,32 +72,28 @@ class StartupAnalyzer:
             research,
         )
 
-        # Build context for adversarial analysis.
-        agent_context = "\n\n".join(
-            [
-                f"{key.upper()}:\n{value.model_dump_json(indent=2)}"
-                for key, value in results.items()
-            ]
+        # Compact context for later stages (saves tokens).
+        agent_context = "\n".join(
+            brief(key.upper(), value) for key, value in results.items()
         )
 
         self._status(status_callback, "Running red-team challenge...", 86)
         red_team = RedTeamAgent().run(
             startup,
-            f"RESEARCH:\n{research}\n\nAGENT OUTPUTS:\n{agent_context}",
+            f"RESEARCH:\n{short_research}\n\nAGENT OUTPUTS:\n{agent_context}",
         )
 
         self._status(status_callback, "Designing validation experiments...", 91)
         validation = ValidationAgent().run(
             startup,
-            f"RESEARCH:\n{research}\n\nAGENT OUTPUTS:\n{agent_context}\n\n"
-            f"RED TEAM:\n{red_team.model_dump_json(indent=2)}",
+            f"AGENT OUTPUTS:\n{agent_context}\n\n{brief_red_team(red_team)}",
         )
 
         scores = calculate_scores(results)
 
         synthesis_context = f"""
 RESEARCH:
-{research}
+{short_research}
 
 CATEGORY SCORES:
 {scores}
@@ -96,18 +101,16 @@ CATEGORY SCORES:
 AGENT OUTPUTS:
 {agent_context}
 
-RED TEAM:
-{red_team.model_dump_json(indent=2)}
+{brief_red_team(red_team)}
 
-VALIDATION PLAN:
-{validation.model_dump_json(indent=2)}
+{brief_validation(validation)}
 """
 
         self._status(status_callback, "Building final evidence-aware report...", 96)
         report = SynthesisAgent().run(startup, synthesis_context)
 
         return {
-            "research": research,
+            "research": full_research,
             "scores": scores,
             "report": report.model_dump(),
             "red_team": red_team.model_dump(),
