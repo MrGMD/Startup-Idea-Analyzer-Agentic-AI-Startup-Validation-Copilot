@@ -22,6 +22,7 @@ Ask:
 
 Do not predict failure. Identify testable failure modes and uncertainties.
 Use only supplied evidence. Never invent facts.
+Be brief: summary max 2 sentences; every list max 3 short items.
 """
 
         user = f"""
