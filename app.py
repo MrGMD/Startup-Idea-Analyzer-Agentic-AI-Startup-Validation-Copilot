@@ -111,11 +111,22 @@ if submitted:
     except Exception as exc:
         progress.empty()
         status.empty()
-        st.error(f"Analysis failed: {exc}")
-        st.info(
-            "Check that GROQ_API_KEY is configured in Streamlit Cloud Secrets "
-            "and redeploy the app."
-        )
+        error_text = str(exc)
+        if "429" in error_text or "rate_limit" in error_text.lower():
+            st.error(
+                "Groq daily token limit reached. Please try again later, "
+                "switch to a different model in config.py, or upgrade your "
+                "Groq plan."
+            )
+            st.caption(error_text)
+        elif "GROQ_API_KEY" in error_text or "401" in error_text:
+            st.error(f"Analysis failed: {exc}")
+            st.info(
+                "Check that GROQ_API_KEY is configured in Streamlit Cloud "
+                "Secrets and redeploy the app."
+            )
+        else:
+            st.error(f"Analysis failed: {exc}")
         st.stop()
 
     progress.progress(100)
